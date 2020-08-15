@@ -9,14 +9,23 @@ class MainActivity : AppCompatActivity () {
 
     override fun onCreate (savedInstanceState : Bundle?) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate: " + stringFromJNI());
+        game_init()
     }
 
-    external fun stringFromJNI (): String?
+    override fun onDestroy() {
+        super.onDestroy()
+        game_shutdown();
+    }
+
+    external fun game_init ();
+
+    external fun game_update ();
+
+    external fun game_shutdown ();
 
     companion object {
         init {
-            System.loadLibrary("hello-jni");
+            System.loadLibrary("game");
         }
     }
 }
