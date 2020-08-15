@@ -232,6 +232,10 @@ int LoadVulkanSymbols(void) {
     return 1;
 }
 
+int FreeVulkanSymbols (void)
+{
+}
+
 // No Vulkan support, do not set function addresses
 PFN_vkCreateInstance vkCreateInstance;
 PFN_vkDestroyInstance vkDestroyInstance;

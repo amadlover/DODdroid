@@ -7,11 +7,13 @@
 
 #define VK_NO_PROTOTYPES 1
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_android.h>
 
 /* Initialize the Vulkan function pointer variables declared in this header.
  * Returns 0 if vulkan is not available, non-zero if it is available.
  */
 int LoadVulkanSymbols(void);
+int FreeVulkanSymbols (void);
 
 // VK_core
 extern PFN_vkCreateInstance vkCreateInstance;

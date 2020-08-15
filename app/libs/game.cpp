@@ -3,31 +3,20 @@
 //
 
 #include "vulkan_interface.hpp"
+
 #include <jni.h>
 #include <android/log.h>
 
-static const char* TAG = "GameVulkanInterface";
+#include "game.hpp"
 
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_ntkinteractive_doddroid_MainActivity_game_1init(JNIEnv *env, jobject thiz) {
-    __android_log_write(ANDROID_LOG_VERBOSE, TAG, "game_init");
-    vulkan_interface_init();
+AGE_RESULT game_init (struct android_app* pApp) {
+    AGE_RESULT age_result = AGE_RESULT::SUCCESS;
+
+    age_result = vulkan_interface_init(pApp);
+
+    return age_result;
 }
 
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_ntkinteractive_doddroid_MainActivity_game_1update(JNIEnv *env, jobject thiz) {
-    // TODO: implement game_update()
-
-    __android_log_write(ANDROID_LOG_VERBOSE, TAG, "game_update");
-}
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_ntkinteractive_doddroid_MainActivity_game_1shutdown(JNIEnv *env, jobject thiz) {
-    // TODO: implement game_shutdown()
-
-    __android_log_write(ANDROID_LOG_VERBOSE, TAG, "game_shutdown");
+void game_shutdown () {
     vulkan_interface_shutdown();
 }
