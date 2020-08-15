@@ -9,7 +9,7 @@ class MainActivity : AppCompatActivity () {
 
     override fun onCreate (savedInstanceState : Bundle?) {
         super.onCreate(savedInstanceState);
-        game_init()
+        game_init();
     }
 
     override fun onDestroy() {
