@@ -7,10 +7,10 @@
 
 #endif //DODDROID_VULKAN_INTERFACE_HPP
 
-#include "error.hpp"
-
 #include <vector>
-#include <vulkan/vulkan.h>
+
+#include "error.hpp"
+#include "vulkan_wrapper.hpp"
 
 extern VkInstance instance;
 extern VkPhysicalDevice physical_device;

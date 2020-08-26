@@ -2,20 +2,17 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.1"
+    compileSdkVersion 29
+    buildToolsVersion "30.0.2"
 
     ndkVersion "21.3.6528147"
 
     defaultConfig {
         applicationId "com.ntkinteractive.doddroid"
         minSdkVersion 22
-        targetSdkVersion 30
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
-        ndk {
-            abiFilters "armeabi-v7a"
-        }
     }
 
     buildTypes {
@@ -30,12 +27,20 @@ android {
             path "libs/CMakeLists.txt"
         }
     }
+
+    sourceSets {
+        main {
+            jniLibs {
+                srcDir "jniLibs"
+            }
+        }
+    }
 }
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.0'
     implementation "androidx.core:core-ktx:1.3.1"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }

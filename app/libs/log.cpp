@@ -9,6 +9,11 @@ AGE_RESULT log_error (const AGE_RESULT result) {
     const char *TAG = "Asteroids";
 
     switch (result) {
+        case AGE_RESULT::ERROR_LOADING_SYMBOLS:
+            __android_log_write(ANDROID_LOG_ERROR, TAG,
+                                "Vulkan Error: Loading Vulkan Symbols\n");
+            break;
+
         case AGE_RESULT::ERROR_GRAPHICS_POPULATE_INSTANCE_LAYERS_AND_EXTENSIONS:
             __android_log_write(ANDROID_LOG_ERROR, TAG,
                                 "Graphics Error: Populating instance Layers and Extensions\n");

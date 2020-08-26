@@ -2,7 +2,6 @@
 // Created by nihal on 15-08-2020.
 //
 
-#include "vulkan_wrapper.hpp"
 #include "vulkan_interface.hpp"
 
 #include "error.hpp"
@@ -40,16 +39,13 @@ VkSampler common_sampler;
 
 static const char* TAG = "Asteroids";
 
-VkResult create_debug_messenger (VkInstance instance,
-                                       const VkDebugUtilsMessengerCreateInfoEXT* debug_messenger_create_info,
-                                       const VkAllocationCallbacks* allocation_callbacks,
-                                       VkDebugUtilsMessengerEXT* debug_messenger)
+VkResult create_debug_messenger (const VkDebugUtilsMessengerCreateInfoEXT* debug_messenger_create_info)
 {
     PFN_vkCreateDebugUtilsMessengerEXT func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr (instance, "vkCreateDebugUtilsMessengerEXT");
 
     if (func)
     {
-        return func (instance, debug_messenger_create_info, allocation_callbacks, debug_messenger);
+        return func (instance, debug_messenger_create_info, nullptr, &debug_messenger);
     }
     else
     {
@@ -57,15 +53,13 @@ VkResult create_debug_messenger (VkInstance instance,
     }
 }
 
-void destroy_debug_messenger (VkInstance instance,
-                                    VkDebugUtilsMessengerEXT debug_messenger,
-                                    const VkAllocationCallbacks* allocation_callbacks)
+void destroy_debug_messenger ()
 {
     PFN_vkDestroyDebugUtilsMessengerEXT func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr (instance, "vkDestroyDebugUtilsMessengerEXT");
 
     if (func)
     {
-        func (instance, debug_messenger, allocation_callbacks);
+        func (instance, debug_messenger, nullptr);
     }
     else
     {
@@ -88,10 +82,68 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debug_messenger_callback (
 }
 
 
+AGE_RESULT create_instance () {
+    std::vector<const char *> instance_extensions;
+    instance_extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+    instance_extensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
+
+    std::vector<const char *> instance_layers;
+
+    if (is_validation_needed) {
+        instance_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        instance_layers.push_back("VK_LAYER_KHRONOS_validation");
+    }
+
+    VkApplicationInfo application_info = {};
+    application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    application_info.pNext = nullptr;
+    application_info.apiVersion = VK_API_VERSION_1_1;
+    application_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+    application_info.pEngineName = "AGE";
+    application_info.pApplicationName = "Asteroids";
+    application_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+
+    VkInstanceCreateInfo create_info = {};
+    create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    create_info.flags = 0;
+    create_info.pNext = nullptr;
+    create_info.enabledExtensionCount = instance_extensions.size();
+    create_info.ppEnabledExtensionNames = instance_extensions.data();
+    create_info.pApplicationInfo = &application_info;
+
+    if (is_validation_needed) {
+        create_info.enabledLayerCount = instance_layers.size();
+        create_info.ppEnabledLayerNames = instance_layers.data();
+    }
+
+    VkResult vk_result = vkCreateInstance(&create_info, nullptr, &instance);
+    if (vk_result != VK_SUCCESS) {
+        return AGE_RESULT::ERROR_GRAPHICS_CREATE_INSTANCE;
+    }
+
+    return AGE_RESULT::SUCCESS;
+}
+
+AGE_RESULT create_surface (ANativeWindow* p_window) {
+    VkAndroidSurfaceCreateInfoKHR create_info = {};
+
+    create_info.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
+    create_info.flags = 0;
+    create_info.window = p_window;
+
+    VkResult vk_result = vkCreateAndroidSurfaceKHR (instance, &create_info, nullptr, &surface);
+    if (vk_result != VK_SUCCESS) {
+        return AGE_RESULT::ERROR_GRAPHICS_CREATE_SURFACE;
+    }
+
+    return AGE_RESULT::SUCCESS;
+}
+
 AGE_RESULT vulkan_interface_init (struct android_app* pApp) {
     __android_log_write(ANDROID_LOG_VERBOSE, TAG, "vulkan_interface_init");
     if (!LoadVulkanSymbols()) {
         __android_log_write(ANDROID_LOG_ERROR, TAG, "Vulkan not found");
+        return AGE_RESULT::ERROR_LOADING_SYMBOLS;
     }
 
     AGE_RESULT age_result = AGE_RESULT::SUCCESS;
@@ -103,56 +155,22 @@ AGE_RESULT vulkan_interface_init (struct android_app* pApp) {
     is_validation_needed = true;
 #endif
 
-    VkInstanceCreateInfo instance_create_info;
-    VkAndroidSurfaceCreateInfoKHR surface_create_info;
-
-    VkApplicationInfo application_info = {
-            VK_STRUCTURE_TYPE_APPLICATION_INFO,
-            NULL,
-            "Asteroids",
-            VK_MAKE_VERSION (1, 0, 0),
-            "AGE",
-            VK_MAKE_VERSION (1, 0, 0),
-            VK_API_VERSION_1_1
-    };
-
-    std::vector<const char *> instance_extensions, device_extensions;
-    instance_extensions.push_back("VK_KHR_surface");
-    instance_extensions.push_back("VK_KHR_android_surface");
-    device_extensions.push_back("VK_KHR_swapchain");
-
-    instance_create_info = {
-            VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-            nullptr,
-            0,
-            &application_info,
-            0,
-            nullptr,
-            instance_extensions.size(),
-            instance_extensions.data ()
-    };
-
-    vk_result = vkCreateInstance (&instance_create_info,nullptr, &instance);
-    if (vk_result!= VK_SUCCESS) {
-        age_result = AGE_RESULT::ERROR_GRAPHICS_CREATE_INSTANCE;
-        goto exit;
-    }
-
-    surface_create_info = {
-            VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
-            nullptr,
-            0,
-            pApp->window
-    };
-
-    vk_result = vkCreateAndroidSurfaceKHR (instance, &surface_create_info, nullptr, &surface);
-    if (vk_result != VK_SUCCESS)
+    age_result = create_instance();
+    if (age_result != AGE_RESULT::SUCCESS)
     {
-        age_result = AGE_RESULT::ERROR_GRAPHICS_CREATE_SURFACE;
-        goto exit;
+        return age_result;
     }
 
-exit:
+    if (is_validation_needed)
+    {
+
+    }
+
+    age_result = create_surface(pApp->window);
+    if (age_result != AGE_RESULT::SUCCESS) {
+        return age_result;
+    }
+
     return age_result;
 }
 
