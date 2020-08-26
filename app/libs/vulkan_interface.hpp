@@ -27,7 +27,7 @@ extern VkExtent2D surface_extent;
 extern VkSwapchainKHR swapchain;
 extern std::vector<VkImage> swapchain_images;
 extern std::vector<VkImageView> swapchain_image_views;
-extern size_t swapchain_image_count;
+extern uint32_t swapchain_image_count;
 extern VkExtent2D current_extent;
 extern VkSurfaceFormatKHR chosen_surface_format;
 extern VkCommandPool transfer_command_pool;

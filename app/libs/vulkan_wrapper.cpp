@@ -5,8 +5,10 @@
 #include "vulkan_wrapper.hpp"
 #include <dlfcn.h>
 
+void* libvulkan = nullptr;
+
 int LoadVulkanSymbols(void) {
-    void* libvulkan = dlopen("libvulkan.so", RTLD_NOW | RTLD_LOCAL);
+    libvulkan = dlopen("libvulkan.so", RTLD_NOW | RTLD_LOCAL);
     if (!libvulkan) return 0;
 
     // Vulkan supported, set function addresses
@@ -232,8 +234,9 @@ int LoadVulkanSymbols(void) {
     return 1;
 }
 
-int FreeVulkanSymbols (void)
+void FreeVulkanSymbols ()
 {
+    dlclose (libvulkan);
 }
 
 // No Vulkan support, do not set function addresses
