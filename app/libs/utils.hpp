@@ -8,6 +8,7 @@
 #include <cstddef>
 
 void* utils_malloc (const size_t size);
+void* utils_realloc (void* ptr, const size_t size);
 void utils_free (void* ptr);
 
 #endif //DODDROID_UTILS_HPP

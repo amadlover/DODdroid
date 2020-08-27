@@ -12,7 +12,8 @@
 #include <android_native_app_glue.h>
 
 bool is_validation_needed = false;
-VkDebugUtilsMessengerEXT debug_messenger = VK_NULL_HANDLE;
+bool is_debug_utils_ext_avaiable = false;
+VkDebugUtilsMessengerEXT debug_utils_messenger = VK_NULL_HANDLE;
 VkSurfaceKHR surface = VK_NULL_HANDLE;
 VkSurfaceCapabilitiesKHR surface_capabilities = { 0 };
 VkPresentModeKHR chosen_present_mode;
@@ -40,6 +41,57 @@ VkSampler common_sampler;
 
 static const char* TAG = "Asteroids";
 
+VKAPI_ATTR VkBool32 VKAPI_CALL debug_utils_messenger_callback (
+        VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+        VkDebugUtilsMessageTypeFlagsEXT message_types,
+        const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
+        void* pUserData) {
+    if (callback_data) {
+        printf("Debug Callback Message: %s\n\n", callback_data->pMessage);
+        __android_log_print(ANDROID_LOG_DEBUG, TAG, "Debug Callback Message: %s\n\n",
+                            callback_data->pMessage);
+    }
+
+    return false;
+}
+
+AGE_RESULT create_debug_utils_messenger () {
+    auto func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT> (vkGetDeviceProcAddr(
+            device, "vkCreateDebugUtilsMessengerEXT"));
+
+    VkDebugUtilsMessengerCreateInfoEXT create_info = {};
+    create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    create_info.pNext = nullptr;
+    create_info.flags = 0;
+    create_info.messageSeverity = /*VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |*/
+            VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+            VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+            VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+
+    create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+                              VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT |
+                              VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+
+    create_info.pfnUserCallback = debug_utils_messenger_callback;
+
+    assert (func);
+    VkResult vk_result = func(instance, &create_info, nullptr, &debug_utils_messenger);
+
+    if (vk_result != VK_SUCCESS) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG, "%d", vk_result);
+        return AGE_RESULT::ERROR_GRAPHICS_CREATE_DEBUG_UTILS_MESSENGER;
+    }
+}
+
+AGE_RESULT destroy_debug_utils_messenger () {
+    auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT> (vkGetDeviceProcAddr(
+            device, "vkDestroyDebugUtilsMessengerEXT"));
+
+    assert (func);
+
+    func (instance, debug_utils_messenger, nullptr);
+}
+
 AGE_RESULT create_instance () {
     std::vector<const char *> instance_extensions;
     instance_extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
@@ -48,7 +100,28 @@ AGE_RESULT create_instance () {
     std::vector<const char *> instance_layers;
 
     if (is_validation_needed) {
-        instance_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+        uint32_t available_extension_count = 0;
+        vkEnumerateInstanceExtensionProperties(nullptr, &available_extension_count, nullptr);
+
+        auto available_extensions = (VkExtensionProperties *) utils_malloc(
+                sizeof(VkExtensionProperties) * available_extension_count);
+        vkEnumerateInstanceExtensionProperties(nullptr, &available_extension_count,
+                                               available_extensions);
+
+        for (size_t e = 0; e < available_extension_count; ++e) {
+            if (strcmp(available_extensions[e].extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) ==
+                0) {
+                is_debug_utils_ext_avaiable = true;
+                instance_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+            }
+        }
+
+        if (!is_debug_utils_ext_avaiable) {
+            __android_log_write(ANDROID_LOG_VERBOSE, TAG, "Debug utils extension not available");
+        }
+
+        utils_free (available_extensions);
         instance_layers.push_back("VK_LAYER_KHRONOS_validation");
     }
 
@@ -268,10 +341,10 @@ AGE_RESULT create_device () {
     for (size_t ui = 0; ui < unique_queue_family_index_count; ++ui) {
         queue_create_infos[ui].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queue_create_infos[ui].pNext = nullptr;
+        queue_create_infos[ui].flags = 0;
         queue_create_infos[ui].pQueuePriorities = priorities;
         queue_create_infos[ui].queueCount = unique_queue_count[ui];
         queue_create_infos[ui].queueFamilyIndex = unique_queue_family_indices[ui];
-        queue_create_infos[ui].flags = 0;
     }
 
     VkPhysicalDeviceFeatures device_features;
@@ -299,11 +372,8 @@ AGE_RESULT create_device () {
     return AGE_RESULT::SUCCESS;
 }
 
-
 AGE_RESULT create_swapchain ()
 {
-    AGE_RESULT age_result = AGE_RESULT::SUCCESS;
-
     VkSwapchainCreateInfoKHR swapchain_create_info = {
             VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
             nullptr,
@@ -319,7 +389,7 @@ AGE_RESULT create_swapchain ()
             0,
             nullptr,
             surface_capabilities.currentTransform,
-            VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+            VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
             chosen_present_mode,
             1,
             VK_NULL_HANDLE
@@ -329,10 +399,10 @@ AGE_RESULT create_swapchain ()
 
     if (vk_result != VK_SUCCESS)
     {
-        age_result = AGE_RESULT::ERROR_GRAPHICS_CREATE_SWAPCHAIN;
+        return AGE_RESULT::ERROR_GRAPHICS_CREATE_SWAPCHAIN;
     }
 
-    return age_result;
+    return AGE_RESULT::SUCCESS;
 }
 
 AGE_RESULT create_swapchain_image_views ()
@@ -485,6 +555,13 @@ AGE_RESULT vulkan_interface_init (struct android_app* pApp) {
         return age_result;
     }
 
+    if (is_validation_needed && is_debug_utils_ext_avaiable) {
+        age_result = create_debug_utils_messenger();
+        if (age_result != AGE_RESULT::SUCCESS) {
+            return age_result;
+        }
+    }
+
     age_result = create_swapchain ();
     if (age_result != AGE_RESULT::SUCCESS) {
         return age_result;
@@ -542,6 +619,10 @@ void vulkan_interface_shutdown () {
 
     if (surface != VK_NULL_HANDLE) {
         vkDestroySurfaceKHR(instance, surface, nullptr);
+    }
+
+    if (is_validation_needed && is_debug_utils_ext_avaiable) {
+        destroy_debug_utils_messenger();
     }
 
     if (device != VK_NULL_HANDLE) {

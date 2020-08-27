@@ -6,6 +6,6 @@ target_include_directories (native_app_glue PUBLIC ${ANDROID_NDK}/sources/androi
 
 set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
 
-add_library (game SHARED game.cpp vulkan_wrapper.cpp vulkan_interface.cpp graphics.cpp main.cpp log.cpp utils.cpp)
+add_library (game SHARED game.cpp vulkan_wrapper.cpp vulkan_interface.cpp graphics.cpp main.cpp log.cpp utils.cpp types.cpp)
 
 target_link_libraries (game native_app_glue android log)

@@ -7,8 +7,7 @@
 
 #include "error.hpp"
 
-AGE_RESULT game_init (struct android_app* pApp);
+AGE_RESULT game_init (struct android_app* p_app);
 void game_shutdown ();
-
 
 #endif //DODDROID_GAME_HPP
