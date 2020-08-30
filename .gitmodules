@@ -1,0 +1,3 @@
+[submodule "app/libs/External/stb"]
+	path = app/libs/External/stb
+	url = git@github.com:nothings/stb
