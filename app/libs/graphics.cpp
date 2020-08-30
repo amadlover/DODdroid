@@ -47,6 +47,7 @@ AGE_RESULT graphics_update_transforms_buffer_data (
         const size_t game_bullet_live_count, const size_t game_bullets_current_max_count
 )
 {
+
     return AGE_RESULT::SUCCESS;
 }
 

@@ -8,7 +8,8 @@
         android:label="Asteroids"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true">
-        <activity android:name="android.app.NativeActivity">
+        <activity android:name="android.app.NativeActivity"
+            android:screenOrientation="landscape">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="game"/>
