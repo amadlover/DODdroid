@@ -2,8 +2,8 @@
 // Created by nihal on 15-08-2020.
 //
 
-#include "vulkan_interface.hpp"
 #include "game.hpp"
+#include "vulkan_interface.hpp"
 #include "types.hpp"
 #include "utils.hpp"
 #include "graphics.hpp"
@@ -688,7 +688,11 @@ AGE_RESULT game_bullets_small_asteroids_collision_checks ()
 
 AGE_RESULT game_update (size_t delta_msecs)
 {
+    AGE_RESULT age_result = AGE_RESULT::SUCCESS;
+    game_delta_time = delta_msecs;
+    game_secs_since_last_shot += game_delta_time;
 
+    return AGE_RESULT::SUCCESS;
 }
 
 AGE_RESULT game_submit_present ()
@@ -703,7 +707,6 @@ AGE_RESULT game_submit_present ()
 void game_shutdown () {
     graphics_shutdown ();
     vulkan_interface_shutdown();
-
 
     utils_free (game_large_asteroids_transform_inputs);
 

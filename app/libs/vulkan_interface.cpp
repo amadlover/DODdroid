@@ -81,9 +81,11 @@ AGE_RESULT create_debug_utils_messenger () {
         __android_log_print(ANDROID_LOG_ERROR, TAG, "%d", vk_result);
         return AGE_RESULT::ERROR_GRAPHICS_CREATE_DEBUG_UTILS_MESSENGER;
     }
+
+    return AGE_RESULT::SUCCESS;
 }
 
-AGE_RESULT destroy_debug_utils_messenger () {
+void destroy_debug_utils_messenger () {
     auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT> (vkGetDeviceProcAddr(
             device, "vkDestroyDebugUtilsMessengerEXT"));
 
@@ -282,14 +284,7 @@ AGE_RESULT get_physical_device_properties ()
     auto surface_formats = (VkSurfaceFormatKHR*)utils_malloc (sizeof (VkSurfaceFormatKHR) * surface_format_count);
     vkGetPhysicalDeviceSurfaceFormatsKHR (physical_device, surface, &surface_format_count, surface_formats);
 
-    for (size_t s = 0; s < surface_format_count; s++)
-    {
-        if (surface_formats[s].format == VK_FORMAT_B8G8R8A8_UNORM)
-        {
-            chosen_surface_format = surface_formats[s];
-            break;
-        }
-    }
+    chosen_surface_format = surface_formats[0];
 
     uint32_t present_mode_count = 0;
     vkGetPhysicalDeviceSurfacePresentModesKHR (physical_device, surface, &present_mode_count, nullptr);
