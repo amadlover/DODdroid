@@ -75,8 +75,7 @@ size_t bullet_image_pixels_size = 0;
 VkDeviceMemory images_memory = VK_NULL_HANDLE;
 
 AGE_RESULT graphics_create_geometry_buffers () {
-    AGE_RESULT age_result = AGE_RESULT::SUCCESS;
-    VkResult vk_result = VK_SUCCESS;
+    AGE_RESULT age_result;
 
     VkBuffer staging_vertex_index_buffer = VK_NULL_HANDLE;
     VkDeviceMemory staging_vertex_index_memory = VK_NULL_HANDLE;
@@ -84,7 +83,7 @@ AGE_RESULT graphics_create_geometry_buffers () {
 
 
     VkCommandBuffer copy_cmd_buffer = VK_NULL_HANDLE;
-    VkBufferCopy buffer_copy = {};
+    VkBufferCopy buffer_copy;
 
     size_t size = (VkDeviceSize) background_positions_size +
                   (VkDeviceSize) background_uvs_size +
@@ -433,8 +432,6 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager) {
 }
 
 AGE_RESULT graphics_create_descriptor_sets_pipeline_layout () {
-    VkResult vk_result = VK_SUCCESS;
-
     VkDescriptorPoolSize descriptor_pool_sizes[] = {
             {
                     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
@@ -454,7 +451,7 @@ AGE_RESULT graphics_create_descriptor_sets_pipeline_layout () {
             2,
             descriptor_pool_sizes
     };
-    vk_result = vkCreateDescriptorPool(device, &descriptor_pool_create_info, nullptr,
+    VkResult vk_result = vkCreateDescriptorPool(device, &descriptor_pool_create_info, nullptr,
                                        &descriptor_pool);
     if (vk_result != VK_SUCCESS) {
         return AGE_RESULT::ERROR_GRAPHICS_CREATE_DESCRIPTOR_POOL;
@@ -674,7 +671,7 @@ AGE_RESULT graphics_create_swapchain_framebuffers () {
             1
     };
 
-    VkResult vk_result = VK_SUCCESS;
+    VkResult vk_result;
 
     for (size_t i = 0; i < swapchain_image_count; ++i) {
         framebuffer_create_info.pAttachments = &swapchain_image_views[i];
@@ -691,9 +688,7 @@ AGE_RESULT graphics_create_swapchain_framebuffers () {
 }
 
 AGE_RESULT graphics_create_pipeline (AAssetManager* asset_manager) {
-    AGE_RESULT age_result = AGE_RESULT::SUCCESS;
-    VkResult vk_result = VK_SUCCESS;
-
+    VkResult vk_result;
     VkShaderModule vertex_shader_module = VK_NULL_HANDLE;
     VkShaderModule fragment_shader_module = VK_NULL_HANDLE;
 
@@ -869,7 +864,7 @@ AGE_RESULT graphics_create_pipeline (AAssetManager* asset_manager) {
     };
 
 
-    age_result = vk_create_shader_module(reinterpret_cast<const uint32_t *>  (vertex_shader_buffer),
+    AGE_RESULT age_result = vk_create_shader_module(reinterpret_cast<const uint32_t *>  (vertex_shader_buffer),
                                          static_cast<const uint32_t> (vertex_shader_length),
                                          VK_SHADER_STAGE_VERTEX_BIT,
                                          &shader_stage_create_infos[0], &vertex_shader_module);
@@ -934,7 +929,7 @@ AGE_RESULT graphics_create_swapchain_command_pool_buffers () {
 }
 
 AGE_RESULT graphics_create_swapchain_semaphores_fences () {
-    VkResult vk_result = VK_SUCCESS;
+    VkResult vk_result;
 
     VkSemaphoreCreateInfo semaphore_create_info = {VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, nullptr,
                                                    0};
@@ -985,9 +980,7 @@ AGE_RESULT graphics_init (
         const size_t game_bullet_live_count,
         const float screen_aspect_ratio
 ) {
-    AGE_RESULT age_result = AGE_RESULT::SUCCESS;
-
-    age_result = graphics_create_geometry_buffers();
+    AGE_RESULT age_result = graphics_create_geometry_buffers();
     if (age_result != AGE_RESULT::SUCCESS) {
         return age_result;
     }
@@ -1066,7 +1059,7 @@ AGE_RESULT graphics_create_transforms_buffer (
         vkFreeMemory(device, transforms_buffer_memory, nullptr);
     }
 
-    VkResult vk_result = VK_SUCCESS;
+    VkResult vk_result;
 
     size_t raw_size_per_transform = sizeof(float2) + sizeof(float2) + sizeof(float2);
     aligned_size_per_transform = (raw_size_per_transform +
@@ -1168,7 +1161,7 @@ AGE_RESULT graphics_update_command_buffers (
         const size_t game_bullet_live_count,
         const float screen_aspect_ratio
 ) {
-    VkResult vk_result = VK_SUCCESS;
+    VkResult vk_result;
 
     VkCommandBufferBeginInfo command_buffer_begin_info = {
             VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
