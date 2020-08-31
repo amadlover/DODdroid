@@ -66,7 +66,8 @@ std::uniform_real_distribution<> game_large_asteroids_rotation_speed_rand;
 
 std::uniform_real_distribution<> game_small_asteroids_forward_speed_rand;
 
-std::uniform_real_distribution<> game_large_asteroids_output_position_rand;
+std::uniform_real_distribution<> game_large_asteroids_output_position_x_rand;
+std::uniform_real_distribution<> game_large_asteroids_output_position_y_rand;
 std::uniform_real_distribution<> game_large_asteroids_output_rotation_rand;
 
 
@@ -115,6 +116,9 @@ AGE_RESULT game_init (struct android_app* p_app) {
 
     std::random_device rnd_dev;
     generator = std::mt19937 (rnd_dev ());
+
+    game_large_asteroids_output_position_x_rand = std::uniform_real_distribution<> (-window_aspect_ratio, window_aspect_ratio);
+    game_large_asteroids_output_position_y_rand = std::uniform_real_distribution<> (-1, 1);
 
     game_large_asteroids_forward_speed_rand = std::uniform_real_distribution<> (-0.001, 0.001);
     game_large_asteroids_rotation_speed_rand = std::uniform_real_distribution<> (-0.01, 0.01);
@@ -695,6 +699,12 @@ AGE_RESULT game_bullets_small_asteroids_collision_checks ()
         }
     }
 
+    return age_result;
+}
+
+AGE_RESULT game_process_motion_event_down (float x, float y)
+{
+    AGE_RESULT age_result = game_large_asteroid_add(float2 ((float)game_large_asteroids_output_position_x_rand (generator), (float)game_large_asteroids_output_position_y_rand (generator)));
     return age_result;
 }
 

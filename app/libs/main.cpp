@@ -60,11 +60,24 @@ static void handle_cmd (struct android_app* p_app, int cmd) {
 static int32_t handle_input_event (struct android_app* p_app, AInputEvent* event) {
     __android_log_print(ANDROID_LOG_VERBOSE, TAG, "handling input");
 
+    AGE_RESULT age_result = AGE_RESULT::SUCCESS;
+
     if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
+
+        float x = AMotionEvent_getX(event, 0);
+        float y = AMotionEvent_getY(event, 0);
+
+        __android_log_print(ANDROID_LOG_VERBOSE, TAG, "x: %f y: %f\n", x, y);
+
         int event_action = AMotionEvent_getAction(event);
         switch (event_action) {
             case AMOTION_EVENT_ACTION_DOWN:
                 __android_log_write(ANDROID_LOG_VERBOSE, TAG, "down");
+                age_result = game_process_motion_event_down(x, y);
+                if (age_result != AGE_RESULT::SUCCESS) {
+                    log_error(age_result);
+                    break;
+                }
                 break;
 
             case AMOTION_EVENT_ACTION_MOVE:
@@ -75,26 +88,9 @@ static int32_t handle_input_event (struct android_app* p_app, AInputEvent* event
                 __android_log_write(ANDROID_LOG_VERBOSE, TAG, "up");
                 break;
 
-            case AMOTION_EVENT_ACTION_HOVER_ENTER:
-                __android_log_write(ANDROID_LOG_VERBOSE, TAG, "hover enter");
-                break;
-
-            case AMOTION_EVENT_ACTION_HOVER_MOVE:
-                __android_log_write(ANDROID_LOG_VERBOSE, TAG, "hover move");
-                break;
-
-            case AMOTION_EVENT_ACTION_HOVER_EXIT:
-                __android_log_write(ANDROID_LOG_VERBOSE, TAG, "hover exit");
-                break;
-
             default:
                 break;
         }
-
-        float x = AMotionEvent_getX(event, 0);
-        float y = AMotionEvent_getY(event, 0);
-
-        __android_log_print(ANDROID_LOG_VERBOSE, TAG, "x: %f y: %f\n", x, y);
         return 1;
     }
 
@@ -137,8 +133,8 @@ void android_main(struct android_app *p_app) {
                 }
 
                 start = now;
-                __android_log_print(ANDROID_LOG_VERBOSE, TAG, "delta_time_msecs: %lld",
-                                    delta_time_msecs);
+                //__android_log_print(ANDROID_LOG_VERBOSE, TAG, "delta_time_msecs: %lld",
+                                    //delta_time_msecs);
             }
 
             age_result = game_submit_present();
