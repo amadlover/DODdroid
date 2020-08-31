@@ -134,6 +134,7 @@ AGE_RESULT game_init (struct android_app* p_app) {
     }
 
     age_result = graphics_init (
+            p_app->activity->assetManager,
             game_large_asteroids_current_max_count, game_large_asteroids_live_count,
             game_small_asteroids_current_max_count, game_small_asteroids_live_count,
             game_bullets_current_max_count, game_bullet_live_count,
@@ -697,8 +698,7 @@ AGE_RESULT game_bullets_small_asteroids_collision_checks ()
     return age_result;
 }
 
-AGE_RESULT game_update (size_t delta_msecs)
-{
+AGE_RESULT game_update (size_t delta_msecs) {
     AGE_RESULT age_result = AGE_RESULT::SUCCESS;
     game_delta_time = delta_msecs;
     game_secs_since_last_shot += game_delta_time;
@@ -708,25 +708,22 @@ AGE_RESULT game_update (size_t delta_msecs)
         return age_result;
     }
 
-    age_result = game_player_apply_damping ();
-    if (age_result != AGE_RESULT::SUCCESS)
-    {
+    age_result = game_player_apply_damping();
+    if (age_result != AGE_RESULT::SUCCESS) {
         return age_result;
     }
 
-    age_result = game_bullets_large_asteroids_collision_checks ();
-    if (age_result != AGE_RESULT::SUCCESS)
-    {
+    age_result = game_bullets_large_asteroids_collision_checks();
+    if (age_result != AGE_RESULT::SUCCESS) {
         return age_result;
     }
 
-    age_result = game_bullets_small_asteroids_collision_checks ();
-    if (age_result != AGE_RESULT::SUCCESS)
-    {
+    age_result = game_bullets_small_asteroids_collision_checks();
+    if (age_result != AGE_RESULT::SUCCESS) {
         return age_result;
     }
 
-    age_result = graphics_update_transforms_buffer_data (
+    age_result = graphics_update_transforms_buffer_data(
             &game_player_output_position,
             &game_player_output_rotation,
             &game_player_output_scale,
@@ -744,23 +741,21 @@ AGE_RESULT game_update (size_t delta_msecs)
             game_bullets_outputs_rotations,
             game_bullets_outputs_scales,
             game_bullet_live_count,
-            game_bullets_current_max_count
+            game_bullets_current_max_count,
+            window_aspect_ratio
     );
-    if (age_result != AGE_RESULT::SUCCESS)
-    {
+    if (age_result != AGE_RESULT::SUCCESS) {
         return age_result;
     }
 
-    if (should_update_command_buffers)
-    {
-        age_result = graphics_update_command_buffers (
+    if (should_update_command_buffers) {
+        age_result = graphics_update_command_buffers(
                 game_large_asteroids_live_count,
                 game_small_asteroids_live_count,
                 game_bullet_live_count,
                 window_aspect_ratio
         );
-        if (age_result != AGE_RESULT::SUCCESS)
-        {
+        if (age_result != AGE_RESULT::SUCCESS) {
             return age_result;
         }
 
@@ -770,34 +765,33 @@ AGE_RESULT game_update (size_t delta_msecs)
     return AGE_RESULT::SUCCESS;
 }
 
-AGE_RESULT game_submit_present ()
-{
+AGE_RESULT game_submit_present () {
     AGE_RESULT age_result = AGE_RESULT::SUCCESS;
 
-    age_result = graphics_submit_present ();
+    age_result = graphics_submit_present();
 
     return age_result;
 }
 
 void game_shutdown () {
-    graphics_shutdown ();
+    graphics_shutdown();
     vulkan_interface_shutdown();
 
-    utils_free (game_large_asteroids_transform_inputs);
+    utils_free(game_large_asteroids_transform_inputs);
 
-    utils_free (game_large_asteroids_outputs_positions);
-    utils_free (game_large_asteroids_outputs_rotations);
-    utils_free (game_large_asteroids_outputs_scales);
+    utils_free(game_large_asteroids_outputs_positions);
+    utils_free(game_large_asteroids_outputs_rotations);
+    utils_free(game_large_asteroids_outputs_scales);
 
-    utils_free (game_small_asteroids_transform_inputs);
+    utils_free(game_small_asteroids_transform_inputs);
 
-    utils_free (game_small_asteroids_outputs_positions);
-    utils_free (game_small_asteroids_outputs_rotations);
-    utils_free (game_small_asteroids_outputs_scales);
+    utils_free(game_small_asteroids_outputs_positions);
+    utils_free(game_small_asteroids_outputs_rotations);
+    utils_free(game_small_asteroids_outputs_scales);
 
-    utils_free (game_bullets_transform_inputs);
+    utils_free(game_bullets_transform_inputs);
 
-    utils_free (game_bullets_outputs_positions);
-    utils_free (game_bullets_outputs_rotations);
-    utils_free (game_bullets_outputs_scales);
+    utils_free(game_bullets_outputs_positions);
+    utils_free(game_bullets_outputs_rotations);
+    utils_free(game_bullets_outputs_scales);
 }

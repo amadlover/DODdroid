@@ -32,8 +32,8 @@ static void handle_cmd (struct android_app* p_app, int cmd) {
 
     switch (cmd) {
         case APP_CMD_INIT_WINDOW:
-            draw_something(p_app);
             game_init(p_app);
+            game_submit_present();
             break;
 
         case APP_CMD_TERM_WINDOW:

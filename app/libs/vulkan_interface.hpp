@@ -30,7 +30,7 @@ extern std::vector<VkImageView> swapchain_image_views;
 extern uint32_t swapchain_image_count;
 extern VkExtent2D current_extent;
 extern VkSurfaceFormatKHR chosen_surface_format;
-extern VkCommandPool transfer_command_pool;
+extern VkCommandPool graphics_command_pool;
 extern VkSampler common_sampler;
 
 
