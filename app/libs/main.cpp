@@ -8,11 +8,15 @@
 #include <memory>
 #include <android/input.h>
 #include <android/native_window.h>
+#include <chrono>
 
 #include "game.hpp"
 #include "log.hpp"
 
 const char* TAG = "Asteroids";
+size_t tick_rate_msecs = 15;
+
+bool is_game_inited = false;
 
 static void draw_something (struct android_app* p_app) {
     __android_log_write(ANDROID_LOG_VERBOSE, TAG, "draw_something");
@@ -30,11 +34,18 @@ static void draw_something (struct android_app* p_app) {
 static void handle_cmd (struct android_app* p_app, int cmd) {
     __android_log_print(ANDROID_LOG_VERBOSE, TAG, "handling cmd");
 
+    AGE_RESULT age_result = AGE_RESULT::SUCCESS;
+
     switch (cmd) {
         case APP_CMD_INIT_WINDOW:
-            game_init(p_app);
-            game_update(10);
-            game_submit_present();
+            age_result = game_init(p_app);
+            if (age_result != AGE_RESULT::SUCCESS) {
+                log_error(age_result);
+                break;
+            }
+
+            is_game_inited = true;
+
             break;
 
         case APP_CMD_TERM_WINDOW:
@@ -50,8 +61,6 @@ static int32_t handle_input_event (struct android_app* p_app, AInputEvent* event
     __android_log_print(ANDROID_LOG_VERBOSE, TAG, "handling input");
 
     if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
-        int32_t action = AMotionEvent_getAction(event);
-
         int event_action = AMotionEvent_getAction(event);
         switch (event_action) {
             case AMOTION_EVENT_ACTION_DOWN:
@@ -96,19 +105,45 @@ void android_main(struct android_app *p_app) {
     p_app->onAppCmd = handle_cmd;
     p_app->onInputEvent = handle_input_event;
 
+    AGE_RESULT age_result = AGE_RESULT::SUCCESS;
+
+    auto start = std::chrono::steady_clock::now();
+
     while (true) {
         int id;
         int events;
         struct android_poll_source *p_source;
 
-        if ((id = ALooper_pollOnce(-1, nullptr, &events,
-                                     reinterpret_cast<void **>  (&p_source))) >= 0) {
+        while ((id = ALooper_pollAll(0, nullptr, &events,
+                                     reinterpret_cast<void **>(&p_source))) >= 0) {
             if (p_source != nullptr) {
                 p_source->process(p_app, p_source);
             }
 
             if (p_app->destroyRequested == 1) {
                 return;
+            }
+        }
+
+        if (is_game_inited) {
+            auto now = std::chrono::steady_clock::now();
+            auto delta_time_msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    now - start).count();
+
+            if (delta_time_msecs >= tick_rate_msecs) {
+                age_result = game_update(delta_time_msecs);
+                if (age_result != AGE_RESULT::SUCCESS) {
+                    log_error(age_result);
+                }
+
+                start = now;
+                __android_log_print(ANDROID_LOG_VERBOSE, TAG, "delta_time_msecs: %lld",
+                                    delta_time_msecs);
+            }
+
+            age_result = game_submit_present();
+            if (age_result != AGE_RESULT::SUCCESS) {
+                log_error(age_result);
             }
         }
     }

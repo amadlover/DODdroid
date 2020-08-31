@@ -508,7 +508,6 @@ AGE_RESULT vulkan_interface_init (struct android_app* pApp) {
     }
 
     AGE_RESULT age_result = AGE_RESULT::SUCCESS;
-    VkResult vk_result = VK_SUCCESS;
 
 #ifdef NDEBUG
     is_validation_needed = false;
