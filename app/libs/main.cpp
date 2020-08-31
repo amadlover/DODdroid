@@ -33,6 +33,7 @@ static void handle_cmd (struct android_app* p_app, int cmd) {
     switch (cmd) {
         case APP_CMD_INIT_WINDOW:
             game_init(p_app);
+            game_update(10);
             game_submit_present();
             break;
 
