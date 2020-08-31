@@ -11,6 +11,7 @@
 #include <vector>
 #include <android_native_app_glue.h>
 
+
 bool is_validation_needed = false;
 bool is_debug_utils_ext_avaiable = false;
 VkDebugUtilsMessengerEXT debug_utils_messenger = VK_NULL_HANDLE;
@@ -374,7 +375,7 @@ AGE_RESULT create_swapchain ()
             nullptr,
             0,
             surface,
-            surface_capabilities.minImageCount + 1,
+            std::max<uint32_t> (surface_capabilities.minImageCount, 3),
             chosen_surface_format.format,
             chosen_surface_format.colorSpace,
             surface_capabilities.currentExtent,

@@ -7,8 +7,6 @@
 #include "utils.hpp"
 #include "vk_utils.hpp"
 #include "vulkan_interface.hpp"
-#include "actor_vert.hpp"
-#include "actor_frag.hpp"
 
 #include <stb_image.h>
 #include <android/log.h>
@@ -692,12 +690,26 @@ AGE_RESULT graphics_create_swapchain_framebuffers () {
     return AGE_RESULT::SUCCESS;
 }
 
-AGE_RESULT graphics_create_pipeline () {
+AGE_RESULT graphics_create_pipeline (AAssetManager* asset_manager) {
     AGE_RESULT age_result = AGE_RESULT::SUCCESS;
     VkResult vk_result = VK_SUCCESS;
 
     VkShaderModule vertex_shader_module = VK_NULL_HANDLE;
     VkShaderModule fragment_shader_module = VK_NULL_HANDLE;
+
+    AAsset *vertex_shader = AAssetManager_open(asset_manager, "shaders/actor.vert.spv", AASSET_MODE_BUFFER);
+    size_t vertex_shader_length = AAsset_getLength(vertex_shader);
+    char *vertex_shader_buffer = (char *) utils_malloc(vertex_shader_length);
+    AAsset_read(vertex_shader, vertex_shader_buffer, vertex_shader_length);
+    AAsset_close(vertex_shader);
+
+    AAsset *fragment_shader = AAssetManager_open(asset_manager, "shaders/actor.frag.spv",
+                                                 AASSET_MODE_BUFFER);
+    size_t fragment_shader_length = AAsset_getLength(fragment_shader);
+    char *fragment_shader_buffer = (char *) utils_malloc(fragment_shader_length);
+    AAsset_read(fragment_shader, fragment_shader_buffer, fragment_shader_length);
+    AAsset_close(fragment_shader);
+
     VkPipelineShaderStageCreateInfo shader_stage_create_infos[2] = {
             {
                     VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
@@ -856,13 +868,17 @@ AGE_RESULT graphics_create_pipeline () {
             0
     };
 
-    age_result = vk_create_shader_module(actor_vert, sizeof(actor_vert), VK_SHADER_STAGE_VERTEX_BIT,
+
+    age_result = vk_create_shader_module(reinterpret_cast<const uint32_t *>  (vertex_shader_buffer),
+                                         static_cast<const uint32_t> (vertex_shader_length),
+                                         VK_SHADER_STAGE_VERTEX_BIT,
                                          &shader_stage_create_infos[0], &vertex_shader_module);
     if (age_result != AGE_RESULT::SUCCESS) {
         goto exit;
     }
 
-    age_result = vk_create_shader_module(actor_frag, sizeof(actor_frag),
+    age_result = vk_create_shader_module(reinterpret_cast<const uint32_t *>(fragment_shader_buffer),
+                                         static_cast<const uint32_t> (fragment_shader_length),
                                          VK_SHADER_STAGE_FRAGMENT_BIT,
                                          &shader_stage_create_infos[1], &fragment_shader_module);
     if (age_result != AGE_RESULT::SUCCESS) {
@@ -886,6 +902,9 @@ AGE_RESULT graphics_create_pipeline () {
     if (fragment_shader_module != VK_NULL_HANDLE) {
         vkDestroyShaderModule(device, fragment_shader_module, nullptr);
     }
+
+    utils_free(vertex_shader_buffer);
+    utils_free(fragment_shader_buffer);
 
     return age_result;
 }
@@ -965,76 +984,65 @@ AGE_RESULT graphics_init (
         const size_t game_bullets_current_max_count,
         const size_t game_bullet_live_count,
         const float screen_aspect_ratio
-)
-{
+) {
     AGE_RESULT age_result = AGE_RESULT::SUCCESS;
 
-    age_result = graphics_create_geometry_buffers ();
-    if (age_result != AGE_RESULT::SUCCESS)
-    {
+    age_result = graphics_create_geometry_buffers();
+    if (age_result != AGE_RESULT::SUCCESS) {
         return age_result;
     }
 
-    age_result = graphics_create_image_buffers (asset_manager);
-    if (age_result != AGE_RESULT::SUCCESS)
-    {
+    age_result = graphics_create_image_buffers(asset_manager);
+    if (age_result != AGE_RESULT::SUCCESS) {
         return age_result;
     }
 
-    age_result = graphics_create_descriptor_sets_pipeline_layout ();
-    if (age_result != AGE_RESULT::SUCCESS)
-    {
+    age_result = graphics_create_descriptor_sets_pipeline_layout();
+    if (age_result != AGE_RESULT::SUCCESS) {
         return age_result;
     }
 
-    age_result = graphics_create_swapchain_render_pass ();
-    if (age_result != AGE_RESULT::SUCCESS)
-    {
+    age_result = graphics_create_swapchain_render_pass();
+    if (age_result != AGE_RESULT::SUCCESS) {
         return age_result;
     }
 
-    age_result = graphics_create_swapchain_framebuffers ();
-    if (age_result != AGE_RESULT::SUCCESS)
-    {
+    age_result = graphics_create_swapchain_framebuffers();
+    if (age_result != AGE_RESULT::SUCCESS) {
         return age_result;
     }
 
-    age_result = graphics_create_pipeline ();
-    if (age_result != AGE_RESULT::SUCCESS)
-    {
+    age_result = graphics_create_pipeline(asset_manager);
+    if (age_result != AGE_RESULT::SUCCESS) {
         return age_result;
     }
 
-    age_result = graphics_create_swapchain_command_pool_buffers ();
-    if (age_result != AGE_RESULT::SUCCESS)
-    {
+    age_result = graphics_create_swapchain_command_pool_buffers();
+    if (age_result != AGE_RESULT::SUCCESS) {
         return age_result;
     }
 
-    age_result = graphics_create_swapchain_semaphores_fences ();
-    if (age_result != AGE_RESULT::SUCCESS)
-    {
+    age_result = graphics_create_swapchain_semaphores_fences();
+    if (age_result != AGE_RESULT::SUCCESS) {
         return age_result;
     }
 
-    age_result = graphics_create_transforms_buffer (
+    age_result = graphics_create_transforms_buffer(
             game_large_asteroids_current_max_count,
             game_small_asteroids_current_max_count,
             game_bullets_current_max_count
     );
-    if (age_result != AGE_RESULT::SUCCESS)
-    {
+    if (age_result != AGE_RESULT::SUCCESS) {
         return age_result;
     }
 
-    age_result = graphics_update_command_buffers (
+    age_result = graphics_update_command_buffers(
             game_large_asteroids_live_count,
             game_small_asteroids_live_count,
             game_bullet_live_count,
             screen_aspect_ratio
     );
-    if (age_result != AGE_RESULT::SUCCESS)
-    {
+    if (age_result != AGE_RESULT::SUCCESS) {
         return age_result;
     }
 
