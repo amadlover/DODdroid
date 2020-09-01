@@ -14,7 +14,7 @@
 #include "log.hpp"
 
 const char* TAG = "Asteroids";
-size_t tick_rate_msecs = 15;
+uint32_t tick_rate_msecs = 15;
 
 bool is_game_inited = false;
 

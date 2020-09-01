@@ -35,42 +35,42 @@ VkDescriptorSet texture_descriptor_set = VK_NULL_HANDLE;
 VkBuffer transforms_buffer = VK_NULL_HANDLE;
 VkDeviceMemory transforms_buffer_memory = VK_NULL_HANDLE;
 
-size_t aligned_size_per_transform = 0;
-size_t total_transforms_size = 0;
+uint32_t aligned_size_per_transform = 0;
+uint32_t total_transforms_size = 0;
 
 void* transforms_aligned_data = nullptr;
 void* transforms_mapped_data = nullptr;
 
 float background_positions[12] = { -1,-1,0.9f, 1,-1,0.9f, 1,1,0.9f, -1,1,0.9f };
-size_t background_positions_size = sizeof (background_positions);
+uint32_t background_positions_size = sizeof (background_positions);
 float background_uvs[8] = { 0,0, 1,0, 1,1, 0,1 };
-size_t background_uvs_size = sizeof (background_uvs);
-size_t background_indices[6] = { 0,1,2, 0,2,3 };
-size_t background_indices_size = sizeof (background_indices);
-size_t background_index_count = 6;
+uint32_t background_uvs_size = sizeof (background_uvs);
+uint32_t background_indices[6] = { 0,1,2, 0,2,3 };
+uint32_t background_indices_size = sizeof (background_indices);
+uint32_t background_index_count = 6;
 
 
 float actor_positions[12] = { -0.1f,-0.1f,0.5f, 0.1f,-0.1f,0.5f, 0.1f,0.1f,0.5f, -0.1f,0.1f,0.5f };
-size_t actor_positions_size = sizeof (actor_positions);
+uint32_t actor_positions_size = sizeof (actor_positions);
 float actor_uvs[8] = { 1,1, 0,1, 0,0, 1,0 };
-size_t actor_uvs_size = sizeof (actor_uvs);
-size_t actor_indices[6] = { 0,1,2, 0,2,3 };
-size_t actor_indices_size = sizeof (actor_indices);
-size_t actor_index_count = 6;
+uint32_t actor_uvs_size = sizeof (actor_uvs);
+uint32_t actor_indices[6] = { 0,1,2, 0,2,3 };
+uint32_t actor_indices_size = sizeof (actor_indices);
+uint32_t actor_index_count = 6;
 
 
 VkImage background_image = VK_NULL_HANDLE;
 VkImageView background_image_view = VK_NULL_HANDLE;
-size_t background_image_pixels_size = 0;
+uint32_t background_image_pixels_size = 0;
 VkImage player_image = VK_NULL_HANDLE;
 VkImageView player_image_view = VK_NULL_HANDLE;
-size_t player_image_pixels_size = 0;
+uint32_t player_image_pixels_size = 0;
 VkImage asteroid_image = VK_NULL_HANDLE;
 VkImageView asteroid_image_view = VK_NULL_HANDLE;
-size_t asteroid_image_pixels_size = 0;
+uint32_t asteroid_image_pixels_size = 0;
 VkImage bullet_image = VK_NULL_HANDLE;
 VkImageView bullet_image_view = VK_NULL_HANDLE;
-size_t bullet_image_pixels_size = 0;
+uint32_t bullet_image_pixels_size = 0;
 
 VkDeviceMemory images_memory = VK_NULL_HANDLE;
 
@@ -85,7 +85,7 @@ AGE_RESULT graphics_create_geometry_buffers () {
     VkCommandBuffer copy_cmd_buffer = VK_NULL_HANDLE;
     VkBufferCopy buffer_copy;
 
-    size_t size = (VkDeviceSize) background_positions_size +
+    uint32_t size = (VkDeviceSize) background_positions_size +
                   (VkDeviceSize) background_uvs_size +
                   (VkDeviceSize) background_indices_size +
                   (VkDeviceSize) actor_positions_size +
@@ -673,7 +673,7 @@ AGE_RESULT graphics_create_swapchain_framebuffers () {
 
     VkResult vk_result;
 
-    for (size_t i = 0; i < swapchain_image_count; ++i) {
+    for (uint32_t i = 0; i < swapchain_image_count; ++i) {
         framebuffer_create_info.pAttachments = &swapchain_image_views[i];
 
         vk_result = vkCreateFramebuffer(device, &framebuffer_create_info, nullptr,
@@ -693,14 +693,14 @@ AGE_RESULT graphics_create_pipeline (AAssetManager* asset_manager) {
     VkShaderModule fragment_shader_module = VK_NULL_HANDLE;
 
     AAsset *vertex_shader = AAssetManager_open(asset_manager, "shaders/actor.vert.spv", AASSET_MODE_BUFFER);
-    size_t vertex_shader_length = AAsset_getLength(vertex_shader);
+    uint32_t vertex_shader_length = AAsset_getLength(vertex_shader);
     char *vertex_shader_buffer = (char *) utils_malloc(vertex_shader_length);
     AAsset_read(vertex_shader, vertex_shader_buffer, vertex_shader_length);
     AAsset_close(vertex_shader);
 
     AAsset *fragment_shader = AAssetManager_open(asset_manager, "shaders/actor.frag.spv",
                                                  AASSET_MODE_BUFFER);
-    size_t fragment_shader_length = AAsset_getLength(fragment_shader);
+    uint32_t fragment_shader_length = AAsset_getLength(fragment_shader);
     char *fragment_shader_buffer = (char *) utils_malloc(fragment_shader_length);
     AAsset_read(fragment_shader, fragment_shader_buffer, fragment_shader_length);
     AAsset_close(fragment_shader);
@@ -947,7 +947,7 @@ AGE_RESULT graphics_create_swapchain_semaphores_fences () {
 
     swapchain_signal_semaphores = (VkSemaphore *) utils_malloc(
             sizeof(VkSemaphore) * swapchain_image_count);
-    for (size_t i = 0; i < swapchain_image_count; ++i) {
+    for (uint32_t i = 0; i < swapchain_image_count; ++i) {
         vk_result = vkCreateSemaphore(device, &semaphore_create_info, nullptr,
                                       swapchain_signal_semaphores + i);
 
@@ -958,7 +958,7 @@ AGE_RESULT graphics_create_swapchain_semaphores_fences () {
 
     swapchain_fences = (VkFence *) utils_malloc(sizeof(VkFence) * swapchain_image_count);
 
-    for (size_t i = 0; i < swapchain_image_count; ++i) {
+    for (uint32_t i = 0; i < swapchain_image_count; ++i) {
         vk_result = vkCreateFence(device, &fence_create_info, nullptr, swapchain_fences + i);
 
         if (vk_result != VK_SUCCESS) {
@@ -972,12 +972,12 @@ AGE_RESULT graphics_create_swapchain_semaphores_fences () {
 
 AGE_RESULT graphics_init (
         AAssetManager* asset_manager,
-        const size_t game_large_asteroids_current_max_count,
-        const size_t game_large_asteroids_live_count,
-        const size_t game_small_asteroids_current_max_count,
-        const size_t game_small_asteroids_live_count,
-        const size_t game_bullets_current_max_count,
-        const size_t game_bullet_live_count,
+        const uint32_t game_large_asteroids_current_max_count,
+        const uint32_t game_large_asteroids_live_count,
+        const uint32_t game_small_asteroids_current_max_count,
+        const uint32_t game_small_asteroids_live_count,
+        const uint32_t game_bullets_current_max_count,
+        const uint32_t game_bullet_live_count,
         const float screen_aspect_ratio
 ) {
     AGE_RESULT age_result = graphics_create_geometry_buffers();
@@ -1043,9 +1043,9 @@ AGE_RESULT graphics_init (
 }
 
 AGE_RESULT graphics_create_transforms_buffer (
-        const size_t game_large_asteroids_current_max_count,
-        const size_t game_small_asteroids_current_max_count,
-        const size_t game_bullet_current_max_count
+        const uint32_t game_large_asteroids_current_max_count,
+        const uint32_t game_small_asteroids_current_max_count,
+        const uint32_t game_bullet_current_max_count
 ) {
     if (transforms_mapped_data != nullptr) {
         vkUnmapMemory(device, transforms_buffer_memory);
@@ -1061,11 +1061,11 @@ AGE_RESULT graphics_create_transforms_buffer (
 
     VkResult vk_result;
 
-    size_t raw_size_per_transform = sizeof(float2) + sizeof(float2) + sizeof(float2);
+    uint32_t raw_size_per_transform = sizeof(float2) + sizeof(float2) + sizeof(float2);
     aligned_size_per_transform = (raw_size_per_transform +
-                                  (size_t) physical_device_limits.minUniformBufferOffsetAlignment -
+                                  (uint32_t) physical_device_limits.minUniformBufferOffsetAlignment -
                                   1) &
-                                 ~((size_t) physical_device_limits.minUniformBufferOffsetAlignment -
+                                 ~((uint32_t) physical_device_limits.minUniformBufferOffsetAlignment -
                                    1);
 
     total_transforms_size = aligned_size_per_transform * (game_large_asteroids_current_max_count +
@@ -1156,9 +1156,9 @@ AGE_RESULT graphics_create_transforms_buffer (
 }
 
 AGE_RESULT graphics_update_command_buffers (
-        const size_t game_large_asteroids_live_count,
-        const size_t game_small_asteroids_live_count,
-        const size_t game_bullet_live_count,
+        const uint32_t game_large_asteroids_live_count,
+        const uint32_t game_small_asteroids_live_count,
+        const uint32_t game_bullet_live_count,
         const float screen_aspect_ratio
 ) {
     VkResult vk_result;
@@ -1186,7 +1186,7 @@ AGE_RESULT graphics_update_command_buffers (
         return AGE_RESULT::ERROR_GRAPHICS_RESET_COMMAND_POOL;
     }
 
-    for (size_t i = 0; i < swapchain_image_count; ++i) {
+    for (uint32_t i = 0; i < swapchain_image_count; ++i) {
         vk_result = vkBeginCommandBuffer(swapchain_command_buffers[i], &command_buffer_begin_info);
         if (vk_result != VK_SUCCESS) {
             return AGE_RESULT::ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
@@ -1259,7 +1259,7 @@ AGE_RESULT graphics_update_command_buffers (
                            VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(float), sizeof(uint32_t),
                            &texture_index);
 
-        for (size_t a = 0; a < game_large_asteroids_live_count; ++a) {
+        for (uint32_t a = 0; a < game_large_asteroids_live_count; ++a) {
             dynamic_offset = aligned_size_per_transform * (a + 2);
             vkCmdBindDescriptorSets(swapchain_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
                                     graphics_pipeline_layout, 0, 1, &transform_descriptor_set, 1,
@@ -1276,7 +1276,7 @@ AGE_RESULT graphics_update_command_buffers (
             vkCmdDrawIndexed(swapchain_command_buffers[i], actor_index_count, 1, 0, 0, 0);
         }
 
-        for (size_t a = 0; a < game_small_asteroids_live_count; ++a) {
+        for (uint32_t a = 0; a < game_small_asteroids_live_count; ++a) {
             dynamic_offset = aligned_size_per_transform * (game_large_asteroids_live_count + a + 2);
             vkCmdBindDescriptorSets(swapchain_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
                                     graphics_pipeline_layout, 0, 1, &transform_descriptor_set, 1,
@@ -1297,7 +1297,7 @@ AGE_RESULT graphics_update_command_buffers (
         vkCmdPushConstants(swapchain_command_buffers[i], graphics_pipeline_layout,
                            VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(float), sizeof(uint32_t),
                            &texture_index);
-        for (size_t b = 0; b < game_bullet_live_count; ++b) {
+        for (uint32_t b = 0; b < game_bullet_live_count; ++b) {
             dynamic_offset = aligned_size_per_transform *
                              (game_large_asteroids_live_count + game_small_asteroids_live_count +
                               b + 2);
@@ -1330,11 +1330,11 @@ AGE_RESULT graphics_update_command_buffers (
 AGE_RESULT graphics_update_transforms_buffer_data (
         const float2* game_player_output_position, const float2 * game_player_output_rotation, const float2* game_player_output_scale,
         const float2* game_large_asteroids_outputs_positions, const float2 * game_large_asteroids_outputs_rotations, const float2* game_large_asteroids_outputs_scales,
-        const size_t game_large_asteroids_live_count, const size_t game_large_asteroids_current_max_count,
+        const uint32_t game_large_asteroids_live_count, const uint32_t game_large_asteroids_current_max_count,
         const float2* game_small_asteroids_outputs_positions, const float2 * game_small_asteroids_outputs_rotations, const float2* game_small_asteroids_outputs_scales,
-        const size_t game_small_asteroids_live_count, const size_t game_small_asteroids_current_max_count,
+        const uint32_t game_small_asteroids_live_count, const uint32_t game_small_asteroids_current_max_count,
         const float2* game_bullets_outputs_positions, const float2 * game_bullets_outputs_rotations, const float2* game_bullets_outputs_scales,
-        const size_t game_bullet_live_count, const size_t game_bullets_current_max_count,
+        const uint32_t game_bullet_live_count, const uint32_t game_bullets_current_max_count,
         const float background_scale
 )
 {
@@ -1352,47 +1352,47 @@ AGE_RESULT graphics_update_transforms_buffer_data (
 
     std::memcpy ((char*)transforms_aligned_data + aligned_size_per_transform, player_transform, sizeof (player_transform));
 
-    for (size_t a = 0; a < game_large_asteroids_live_count; ++a)
+    for (uint32_t a = 0; a < game_large_asteroids_live_count; ++a)
     {
         std::memcpy ((char*)transforms_aligned_data + (aligned_size_per_transform * (a + 2)), game_large_asteroids_outputs_positions + a, sizeof (float2));
     }
 
-    for (size_t a = 0; a < game_large_asteroids_live_count; ++a)
+    for (uint32_t a = 0; a < game_large_asteroids_live_count; ++a)
     {
         std::memcpy ((char*)transforms_aligned_data + (aligned_size_per_transform * (a + 2) + sizeof (float2)), game_large_asteroids_outputs_rotations + a, sizeof (float2));
     }
 
-    for (size_t a = 0; a < game_large_asteroids_live_count; ++a)
+    for (uint32_t a = 0; a < game_large_asteroids_live_count; ++a)
     {
         std::memcpy ((char*)transforms_aligned_data + (aligned_size_per_transform * (a + 2) + sizeof (float2) + sizeof (float2)), game_large_asteroids_outputs_scales + a, sizeof (float2));
     }
 
-    for (size_t a = 0; a < game_small_asteroids_live_count; ++a)
+    for (uint32_t a = 0; a < game_small_asteroids_live_count; ++a)
     {
         std::memcpy ((char*)transforms_aligned_data + (aligned_size_per_transform * (game_large_asteroids_live_count + a + 2)), game_small_asteroids_outputs_positions + a, sizeof (float2));
     }
 
-    for (size_t a = 0; a < game_small_asteroids_live_count; ++a)
+    for (uint32_t a = 0; a < game_small_asteroids_live_count; ++a)
     {
         std::memcpy ((char*)transforms_aligned_data + (aligned_size_per_transform * (game_large_asteroids_live_count + a + 2) + sizeof (float2)), game_small_asteroids_outputs_rotations + a, sizeof (float2));
     }
 
-    for (size_t a = 0; a < game_small_asteroids_live_count; ++a)
+    for (uint32_t a = 0; a < game_small_asteroids_live_count; ++a)
     {
         std::memcpy ((char*)transforms_aligned_data + (aligned_size_per_transform * (game_large_asteroids_live_count + a + 2) + sizeof (float2) + sizeof (float2)), game_small_asteroids_outputs_scales + a, sizeof (float2));
     }
 
-    for (size_t b = 0; b < game_bullet_live_count; ++b)
+    for (uint32_t b = 0; b < game_bullet_live_count; ++b)
     {
         std::memcpy ((char*)transforms_aligned_data + (aligned_size_per_transform * (game_large_asteroids_live_count + game_small_asteroids_live_count + b + 2)), game_bullets_outputs_positions + b, sizeof (float2));
     }
 
-    for (size_t b = 0; b < game_bullet_live_count; ++b)
+    for (uint32_t b = 0; b < game_bullet_live_count; ++b)
     {
         std::memcpy ((char*)transforms_aligned_data + (aligned_size_per_transform * (game_large_asteroids_live_count + game_small_asteroids_live_count + b + 2) + sizeof (float2)), game_bullets_outputs_rotations + b, sizeof (float2));
     }
 
-    for (size_t b = 0; b < game_bullet_live_count; ++b)
+    for (uint32_t b = 0; b < game_bullet_live_count; ++b)
     {
         std::memcpy ((char*)transforms_aligned_data + (aligned_size_per_transform * (game_large_asteroids_live_count + game_small_asteroids_live_count + b + 2) + sizeof (float2) + sizeof (float2)), game_bullets_outputs_scales + b, sizeof (float2));
     }
@@ -1504,7 +1504,7 @@ void graphics_shutdown () {
     }
 
     if (swapchain_fences) {
-        for (size_t i = 0; i < swapchain_image_count; ++i) {
+        for (uint32_t i = 0; i < swapchain_image_count; ++i) {
             vkDestroyFence(device, swapchain_fences[i], nullptr);
         }
 
@@ -1576,7 +1576,7 @@ void graphics_shutdown () {
     }
 
     if (swapchain_signal_semaphores) {
-        for (size_t i = 0; i < swapchain_image_count; ++i) {
+        for (uint32_t i = 0; i < swapchain_image_count; ++i) {
             vkDestroySemaphore(device, swapchain_signal_semaphores[i], nullptr);
         }
 
@@ -1599,7 +1599,7 @@ void graphics_shutdown () {
     }
 
     if (swapchain_framebuffers) {
-        for (size_t i = 0; i < swapchain_image_count; ++i) {
+        for (uint32_t i = 0; i < swapchain_image_count; ++i) {
             if (swapchain_framebuffers[i] != VK_NULL_HANDLE) {
                 vkDestroyFramebuffer(device, swapchain_framebuffers[i], nullptr);
             }
