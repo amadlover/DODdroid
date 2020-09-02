@@ -5,6 +5,12 @@
 #ifndef DODDROID_TYPES_HPP
 #define DODDROID_TYPES_HPP
 
+enum class motion_event_type {
+    DOWN,
+    MOVE,
+    UP
+};
+
 struct float2
 {
     float2 ()

@@ -9,8 +9,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true">
         <activity android:name="android.app.NativeActivity"
-            android:configChanges="screenSize|orientation">
-            <!--android:screenOrientation="landscape">-->
+            android:configChanges="screenSize|orientation"
+            android:screenOrientation="landscape">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="game"/>

@@ -14,4 +14,6 @@ AGE_RESULT game_update (uint32_t delta_msecs);
 AGE_RESULT game_submit_present ();
 void game_shutdown ();
 
+AGE_RESULT game_player_attempt_to_shoot ();
+
 #endif //DODDROID_GAME_HPP

@@ -18,7 +18,7 @@ uint32_t tick_rate_msecs = 15;
 
 bool is_game_inited = false;
 
-static void draw_something (struct android_app* p_app) {
+static void dummy_draw (struct android_app* p_app) {
     __android_log_write(ANDROID_LOG_VERBOSE, TAG, "draw_something");
     ANativeWindow_Buffer window_buffer;
     ANativeWindow *p_window = p_app->window;
@@ -62,35 +62,40 @@ static int32_t handle_input_event (struct android_app* p_app, AInputEvent* event
 
     AGE_RESULT age_result = AGE_RESULT::SUCCESS;
 
+    float window_width = static_cast<float> (ANativeWindow_getWidth(p_app->window));
+    float window_height = static_cast<float> (ANativeWindow_getHeight(p_app->window));
+
     if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
+        int32_t pointer_count = AMotionEvent_getPointerCount(event);
+        __android_log_print(ANDROID_LOG_VERBOSE, TAG, "pointer count: %d", pointer_count);
 
-        float x = AMotionEvent_getX(event, 0);
-        float y = AMotionEvent_getY(event, 0);
+        for (int32_t p = 0; p < pointer_count; ++p) {
+            int32_t pointer_id = AMotionEvent_getPointerId(event, p);
+            float x = AMotionEvent_getX(event, pointer_id);
+            float y = AMotionEvent_getY(event, pointer_id);
 
-        __android_log_print(ANDROID_LOG_VERBOSE, TAG, "x: %f y: %f\n", x, y);
+            //__android_log_print(ANDROID_LOG_VERBOSE, TAG,
+//                                "index: %d id: %d\n x_index: %f x_id: %f\n y_index: %f y_id: %f\n",
+//                                p, pointer_id, x_index, x_id, y_index, y_id);
 
-        int event_action = AMotionEvent_getAction(event);
-        switch (event_action) {
-            case AMOTION_EVENT_ACTION_DOWN:
-                __android_log_write(ANDROID_LOG_VERBOSE, TAG, "down");
+            float viewport_mapped_x = (x / window_width) * 2 - 1;
+            float viewport_mapped_y = (y / window_height) * 2 - 1;
+
+            __android_log_print(ANDROID_LOG_VERBOSE, TAG, "x :%f y: %f", viewport_mapped_x, viewport_mapped_y);
+
+            if (viewport_mapped_x > 0.8f && viewport_mapped_y > 0.8f) {
+                age_result = game_player_attempt_to_shoot();
+                if (age_result != AGE_RESULT::SUCCESS) {
+                    log_error(age_result);
+                }
+            } else {
                 age_result = game_process_motion_event_down(x, y);
                 if (age_result != AGE_RESULT::SUCCESS) {
                     log_error(age_result);
-                    break;
                 }
-                break;
-
-            case AMOTION_EVENT_ACTION_MOVE:
-                __android_log_write(ANDROID_LOG_VERBOSE, TAG, "move");
-                break;
-
-            case AMOTION_EVENT_ACTION_UP:
-                __android_log_write(ANDROID_LOG_VERBOSE, TAG, "up");
-                break;
-
-            default:
-                break;
+            }
         }
+
         return 1;
     }
 

@@ -375,7 +375,7 @@ AGE_RESULT create_swapchain () {
             VK_SHARING_MODE_EXCLUSIVE,
             0,
             nullptr,
-            surface_capabilities.currentTransform,
+            VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
             VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
             chosen_present_mode,
             1,
@@ -428,16 +428,20 @@ AGE_RESULT create_swapchain_image_views () {
     return AGE_RESULT::SUCCESS;
 }
 
-AGE_RESULT get_device_queues ()
-{
+AGE_RESULT get_device_queues () {
     uint32_t graphics_queue_index = 0;
-    uint32_t compute_queue_index = graphics_queue_family_index == compute_queue_family_index ? 1 : 0;
-    uint32_t transfer_queue_index = transfer_queue_family_index == compute_queue_family_index ? compute_queue_index + 1 : 0;
+    uint32_t compute_queue_index =
+            graphics_queue_family_index == compute_queue_family_index ? 1 : 0;
+    uint32_t transfer_queue_index =
+            transfer_queue_family_index == compute_queue_family_index ? compute_queue_index + 1 : 0;
 
     uint32_t queue_family_property_count = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties (physical_device, &queue_family_property_count, nullptr);
-    auto queue_family_properties = (VkQueueFamilyProperties*)utils_malloc(sizeof (VkQueueFamilyProperties) * queue_family_property_count);
-    vkGetPhysicalDeviceQueueFamilyProperties (physical_device, &queue_family_property_count, queue_family_properties);
+    vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_property_count,
+                                             nullptr);
+    auto queue_family_properties = (VkQueueFamilyProperties *) utils_malloc(
+            sizeof(VkQueueFamilyProperties) * queue_family_property_count);
+    vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_property_count,
+                                             queue_family_properties);
 
     if (graphics_queue_index >= queue_family_properties[graphics_queue_family_index].queueCount) {
         graphics_queue_index = queue_family_properties[graphics_queue_family_index].queueCount - 1;
@@ -451,11 +455,11 @@ AGE_RESULT get_device_queues ()
         transfer_queue_index = queue_family_properties[transfer_queue_family_index].queueCount - 1;
     }
 
-    vkGetDeviceQueue (device, graphics_queue_family_index, graphics_queue_index, &graphics_queue);
-    vkGetDeviceQueue (device, compute_queue_family_index, compute_queue_index, &compute_queue);
-    vkGetDeviceQueue (device, transfer_queue_family_index, transfer_queue_index, &transfer_queue);
+    vkGetDeviceQueue(device, graphics_queue_family_index, graphics_queue_index, &graphics_queue);
+    vkGetDeviceQueue(device, compute_queue_family_index, compute_queue_index, &compute_queue);
+    vkGetDeviceQueue(device, transfer_queue_family_index, transfer_queue_index, &transfer_queue);
 
-    utils_free (queue_family_properties);
+    utils_free(queue_family_properties);
 
     return AGE_RESULT::SUCCESS;
 }
